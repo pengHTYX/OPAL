@@ -375,11 +375,11 @@ class TrainDataset(Dataset):
             'additional/tomb', 'additional/tower', 'additional/town', 'additional/vinyl']
         self.traindata_all, self.traindata_label = load_hci(dir_LFimages)
 
-        print('Load hciold data...')
-        hciold_images=[
-            'blender/medieval',  'blender/horses', 'blender/stillLife', # statue
-        'blender/monasRoom', 'blender/papillon','blender/buddha', 'blender/buddha2'] 
-        self.hciold_all, self.hciold_label = load_hciold(hciold_images)
+        # print('Load hciold data...')
+        # hciold_images=[
+        #     'blender/medieval',  'blender/horses', 'blender/stillLife', # statue
+        # 'blender/monasRoom', 'blender/papillon','blender/buddha', 'blender/buddha2'] 
+        # self.hciold_all, self.hciold_label = load_hciold(hciold_images)
 
         # traindata_90d,traindata_0d,traindata_45d,traindata_m45d,_ = generate_traindata512(traindata_all,traindata_label, Setting02_AngualrViews) 
         print('Load training data... Complete')  
@@ -396,13 +396,13 @@ class TrainDataset(Dataset):
         return 4000
 
     def __getitem__(self, index):
-        if index > 1000:
-            return generate_hci_for_train(self.traindata_all, self.traindata_label,
+        # if index > 1000:
+        return generate_hci_for_train(self.traindata_all, self.traindata_label,
                                                                 self.input_size,self.label_size,1,
                                                                 self.Setting02_AngualrViews,
                                                                 self.boolmask_img4,self.boolmask_img6,self.boolmask_img15, self.use_v, self.inc)    
-        else:
-            return generate_hciold_for_train(self.hciold_all, self.hciold_label, 64, 3)
+        # else:
+        #     return generate_hciold_for_train(self.hciold_all, self.hciold_label, 64, 3)
 
 # train_loader = torch.utils.data.DataLoader(
 #     TrainDataset('train'),
@@ -414,7 +414,7 @@ class TrainDataset(Dataset):
 #     print(0)
 
 # hci old 
-class TestDataset(Dataset):
+class TestDataset0(Dataset):
     def __init__(self, opt, is_lytro=False, transform=None):
         self.opt = opt
         self.input_size = opt.input_size
@@ -453,44 +453,31 @@ class TestDataset(Dataset):
         return  valid_data, test_label, name[1]  # 81*512*512  512*512  array
 
 # hci
-class TestDataset_hci(Dataset):
+class TestDataset(Dataset):
     def __init__(self, opt):
         self.opt = opt
         self.Setting02_AngualrViews = np.array([0,1,2,3,4,5,6,7,8])
         self.input_size = opt.input_size
        
-        
         print('Load test data...') 
         # ## hci
         self.dir_LFimages_hci=['training/boxes', 'training/cotton', 'training/dino', 'training/sideboard',
             'stratified/backgammon', 'stratified/dots', 'stratified/pyramids', 'stratified/stripes'] 
         self.valdata_hci, self.label_hci = load_hci(self.dir_LFimages_hci)
-       
-        ## hciold
-        # self.dir_LFimages_hciold=['blender/buddha', 'blender/buddha2',  'blender/horses', 'blender/medieval','blender/monasRoom', 'blender/papillon', 'blender/stillLife'] 
-        # self.valdata_hciold, self.label_hciold = load_hciold(self.dir_LFimages_hciold)
         
         if opt.input_c == 1:
-            self.valdata_all = np.expand_dims(self.valdata_all[:,:,:,:,:,0] * 0.299 + self.valdata_all[:,:,:,:,:,1] * 0.587 + self.valdata_all[:,:,:,:,:,2] * 0.114, -1)
+            self.valdata_hci = np.expand_dims(self.valdata_hci[:,:,:,:,:,0] * 0.299 + self.valdata_hci[:,:,:,:,:,1] * 0.587 + self.valdata_hci[:,:,:,:,:,2] * 0.114, -1)
         print('Load test data... Complete') 
 
 
     def __len__(self):
-        return len(self.dir_LFimages_hci) + len(self.dir_LFimages_hciold)
+        return len(self.dir_LFimages_hci) 
 
     def __getitem__(self, index):
-        # if index>3:## hciold
-        # center = self.opt.use_views // 2
-        # name = self.dir_LFimages[index].split('/')    
-        # valid_data = torch.FloatTensor(np.transpose(self.valdata_all[index][:, :, 4-center:5+center, 4-center:5+center,:]/255., (4,0,1,2,3)))
-        # test_label =  torch.FloatTensor(self.valdata_label[index]) 
-        # return  valid_data,test_label, name[1]  # 81*512*512  512*512  array
-        # else:
-            # hci
         center = self.opt.use_views // 2
-        valid_data = self.valdata_all / 255.
-        name = self.dir_LFimages[index].split('/')    
+        valid_data = self.valdata_hci / 255.
+        name = self.dir_LFimages_hci[index].split('/')    
         valid_data = torch.FloatTensor(np.transpose(valid_data[index, :, :, 4-center:5+center, 4-center:5+center,:], (4,0,1,2,3)))
-        test_label =  torch.FloatTensor(self.valdata_label[index, :,:]) 
+        test_label =  torch.FloatTensor(self.label_hci[index, :,:]) 
         return  valid_data,test_label, name[1]  # 81*512*512  512*512  array
 
