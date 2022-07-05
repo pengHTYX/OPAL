@@ -133,3 +133,12 @@ dmypy.json
 *.tiff
 *.jpg
 *.png
+*.pyc
+*.txt
+*.pth
+*.out
+
+tb/
+checkoutpoints/
+output/
+results/

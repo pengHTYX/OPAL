@@ -1,0 +1,41 @@
+AUTO_RESUME: True
+
+batch_size: 8
+model_name: 'LFDepth'
+gpu_ids: '2'
+istrain: True
+checkpoints_dir: './checkoutpoints'
+
+
+# visual
+after_epoch_save_visual: 60
+print_freq: 100
+save_latest_freq: 5000
+save_epoch_freq: 10
+
+# training_paras:
+epoch_count: 0  # start to train
+n_epochs: 50    # start to decay
+n_epochs_decay: 50
+lr: 1e-3
+beta1: 0.5
+lr_policy: 'linear'  # [linear | step | plateau | cosine]
+init_type: 'normal'
+init_gain: 0.02
+
+# dataset_paras:
+use_views: 9
+
+# model_paras:
+ngf: 70
+n_stream: 4
+n_block:  7
+
+CUDNN:
+  BENCHMARK: true
+  DETERMINISTIC: false
+  ENABLED: true
+num_workers: 4
+pin_memory: False
+is_shuffle: True
+num_val: 100
