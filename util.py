@@ -1,4 +1,6 @@
 import importlib
+
+from sklearn import datasets
 from model.basemodel import BaseModel
 
 from pathlib import Path
@@ -116,36 +118,61 @@ def save_current_visual(visu, epoch, iter, writer, phase):
 import os
 import cv2
 import tifffile as tif
-def save_img(opt, vis, img_name, time):
+
+def save_img(opt, vis, img_name, save_tifdir):
     '''save test result to ./results '''
-    modes = ['0,1', 'no', 'no']
-    save_dir = os.path.join(opt.results_dir, opt.model_name, opt.time_str)
-    save_tifdir = os.path.join(opt.results_dir, opt.model_name, opt.time_str,'benchmark')
-    if not os.path.exists(save_dir)  :
-        os.makedirs(save_dir)
-    if not os.path.exists(save_tifdir)  :
-        os.makedirs(save_tifdir)   
     i = 0
-    
     for vis_name, tensor in vis.items():
         if len(tensor.shape) == 3:
             tensor = tensor.unsqueeze(1)
         if i == 1:
             pred_numpy = tensor[0,0,:,:].cpu().float().numpy() 
-            save_tif = os.path.join(save_tifdir,img_name + '_depth.tif')
-            tif.imwrite(save_tif,pred_numpy)
+            save_tif = os.path.join(save_tifdir,img_name + '_pred.tif')
+            tif.imwrite(save_tif, pred_numpy)
         elif i==2:
             gt_numpy = tensor[0,0,:,:].cpu().float().numpy() 
-        # save_name = img_name + '_'+vis_name+'.png'
-        # save_img = tensor2im(tensor, modes[i])
-        # save_fn = save_dir +'/'+ save_name
-        # cv2.imwrite(save_fn,save_img[:,:,::-1])
+            save_tif = os.path.join(save_tifdir,img_name + '_gt.tif')
+            tif.imwrite(save_tif, gt_numpy)
         i += 1
 
     train_diff = np.abs(pred_numpy - gt_numpy)
     training_mean_squared_error_x100 = 100 * np.average(np.square(train_diff))
     train_bp = (train_diff >= 0.07)
     bpr007 = 100 * np.average(train_bp)
+    return training_mean_squared_error_x100, bpr007
 
-    print('%s\tMSE*100 = %f\tbpr0.07 = %f' % (img_name, training_mean_squared_error_x100, bpr007))
-   
+# hciold is too large
+def save_patch(opt, vis, img_name, save_tifdir, info):
+    '''save test result to ./results '''
+    H = info['H'][0]
+    W = info['W'][0]
+    out = np.zeros((H, W))
+    gt = np.zeros((H, W))
+    i = 0
+    for vis_name, tensor in vis.items():
+        if len(tensor.shape) == 3:
+            tensor = tensor.unsqueeze(1)
+        if i == 1:
+            result = tensor.cpu().float().numpy() 
+            out[:512, :512] = result[0,0]
+            out[-512:, :512] = result[1,0]
+            out[:512, -512:] = result[2,0]
+            out[-512:, -512:] = result[3,0]
+            save_tif = os.path.join(save_tifdir, img_name + '_pred.tiff')
+            tif.imwrite(save_tif, out)
+        elif i==2:
+            gt_numpy = tensor.cpu().float().numpy() 
+            gt[:512, :512] = gt_numpy[0,0]
+            gt[-512:, :512] = gt_numpy[1,0]
+            gt[:512, -512:] = gt_numpy[2,0]
+            gt[-512:, -512:] = gt_numpy[3,0]
+            save_tif = os.path.join(save_tifdir, img_name + '_gt.tiff')
+            tif.imwrite(save_tif, gt)
+        i += 1
+
+    train_diff = np.abs(gt - out)
+    training_mean_squared_error_x100 = 100 * np.average(np.square(train_diff))
+    train_bp = (train_diff >= 0.07)
+    bpr007 = 100 * np.average(train_bp)
+    return training_mean_squared_error_x100, bpr007
+    

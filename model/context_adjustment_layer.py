@@ -13,21 +13,21 @@ class ContextAdjustmentLayer(nn.Module):
         self.num_blocks = num_blocks
 
         # disp head
-        self.in_conv = nn.Conv2d(5, feature_dim, kernel_size=3, padding=1)
+        self.in_conv = nn.Conv2d(4, feature_dim, kernel_size=3, padding=1)
         self.layers = nn.ModuleList([ResBlock(feature_dim, expansion) for _ in range(num_blocks)])
         self.out_conv = nn.Conv2d(feature_dim, 1, kernel_size=3, padding=1)
 
         # occ head
-        # self.occ_head = nn.Sequential(
-        #     weight_norm(nn.Conv2d(1 + 3, feature_dim, kernel_size=3, padding=1)),
-        #     weight_norm(nn.Conv2d(feature_dim, feature_dim, kernel_size=3, padding=1)),
-        #     nn.ReLU(inplace=True),
-        #     weight_norm(nn.Conv2d(feature_dim, feature_dim, kernel_size=3, padding=1)),
-        #     weight_norm(nn.Conv2d(feature_dim, feature_dim, kernel_size=3, padding=1)),
-        #     nn.ReLU(inplace=True),
-        #     nn.Conv2d(feature_dim, 1, kernel_size=3, padding=1),
-        #     nn.Sigmoid()
-        # )
+        self.occ_head = nn.Sequential(
+            weight_norm(nn.Conv2d(1 + 3, feature_dim, kernel_size=3, padding=1)),
+            weight_norm(nn.Conv2d(feature_dim, feature_dim, kernel_size=3, padding=1)),
+            nn.ReLU(inplace=True),
+            weight_norm(nn.Conv2d(feature_dim, feature_dim, kernel_size=3, padding=1)),
+            weight_norm(nn.Conv2d(feature_dim, feature_dim, kernel_size=3, padding=1)),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(feature_dim, 1, kernel_size=3, padding=1),
+            nn.Sigmoid()
+        )
 
     def forward(self, disp_raw: Tensor, occ_raw: Tensor, img: Tensor):
         """
@@ -38,15 +38,15 @@ class ContextAdjustmentLayer(nn.Module):
             disp_final: final disparity [N,1,H,W]
             occ_final: final occlusion [N,1,H,W] 
         """""
-        feat = self.in_conv(torch.cat([disp_raw, img, occ_raw], dim=1))
+        feat = self.in_conv(torch.cat([disp_raw, img], dim=1))
         for layer in self.layers:
             feat = layer(feat, disp_raw)
         disp_res = self.out_conv(feat)
         disp_final = disp_raw + disp_res
 
-        # occ_final = self.occ_head(torch.cat([occ_raw, img], dim=1))
+        occ_final = self.occ_head(torch.cat([occ_raw, img], dim=1))
 
-        return disp_final, None
+        return disp_final, occ_final
 
 class ContextAdjustmentLayerv2(nn.Module):
     """
@@ -78,6 +78,7 @@ class ContextAdjustmentLayerv2(nn.Module):
         disp_res = self.out_conv(feat)
         disp_final = disp_raw + disp_res
  
+
         return disp_final
 
 class ResBlock(nn.Module):

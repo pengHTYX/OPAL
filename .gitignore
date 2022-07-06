@@ -137,6 +137,7 @@ dmypy.json
 *.txt
 *.pth
 *.out
+launch.json
 
 tb/
 checkoutpoints/

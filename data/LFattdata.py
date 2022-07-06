@@ -103,38 +103,38 @@ def generate_hciold_for_train(traindata_all, traindata_label, input_size, ouc):
     traindata_batch = np.float32((1 / 255) * traindata_batch)
     
     '''data argument'''
-    # contrast
-    gray_rand = 0.4 * np.random.rand() + 0.8
-    traindata_batch= pow(traindata_batch, gray_rand)
-    # traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
-    rotation_rand = np.random.randint(0, 5)
-    # h*w*9*9*3   1*h*w
-    if rotation_rand == 0:
-        traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
-    elif rotation_rand == 1:# 90
-        traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch))
-        traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 1, (2, 3))) # w*h*9*9*3
-        traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
-        traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :]))
-        traindata_batch_label[0, :, :] = traindata_label_tmp6
-    elif rotation_rand == 2: # 180
-        traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 2))
-        traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 2, (2, 3)))
-        traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
-        traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 2))
-        traindata_batch_label[0, :, :] = traindata_label_tmp6
-    elif rotation_rand == 3:# 270
-        traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 3))
-        traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 3, (2, 3)))
-        traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
-        traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 3))
-        traindata_batch_label[0, :, :] = traindata_label_tmp6
-    else:# flip
-        traindata_batch_tmp = np.copy(np.rot90(np.transpose(traindata_batch, (1, 0, 4, 2, 3))))
-        traindata_batch = np.copy(np.transpose(traindata_batch_tmp[:,:,:,::-1],(2,0,1,3,4) ))# 3*w*h*9*9
+    # # contrast
+    # gray_rand = 0.4 * np.random.rand() + 0.8
+    # traindata_batch= pow(traindata_batch, gray_rand)
+    # # traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
+    # rotation_rand = np.random.randint(0, 5)
+    # # h*w*9*9*3   1*h*w
+    # if rotation_rand == 0:
+    #     traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
+    # elif rotation_rand == 1:# 90
+    #     traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch))
+    #     traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 1, (2, 3))) # w*h*9*9*3
+    #     traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
+    #     traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :]))
+    #     traindata_batch_label[0, :, :] = traindata_label_tmp6
+    # elif rotation_rand == 2: # 180
+    #     traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 2))
+    #     traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 2, (2, 3)))
+    #     traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
+    #     traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 2))
+    #     traindata_batch_label[0, :, :] = traindata_label_tmp6
+    # elif rotation_rand == 3:# 270
+    #     traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 3))
+    #     traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 3, (2, 3)))
+    #     traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
+    #     traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 3))
+    #     traindata_batch_label[0, :, :] = traindata_label_tmp6
+    # else:# flip
+    #     traindata_batch_tmp = np.copy(np.rot90(np.transpose(traindata_batch, (1, 0, 4, 2, 3))))
+    #     traindata_batch = np.copy(np.transpose(traindata_batch_tmp[:,:,:,::-1],(2,0,1,3,4) ))# 3*w*h*9*9
 
-        traindata_batch_label_tmp = np.copy(np.rot90(np.transpose(traindata_batch_label[0, :, :], (1,0))))
-        traindata_batch_label[0,:,:] = traindata_batch_label_tmp# 1*w*h
+    #     traindata_batch_label_tmp = np.copy(np.rot90(np.transpose(traindata_batch_label[0, :, :], (1,0))))
+    #     traindata_batch_label[0,:,:] = traindata_batch_label_tmp# 1*w*h
      
     traindata_all = torch.FloatTensor(traindata_batch)
     label_all = torch.FloatTensor(traindata_batch_label)
@@ -180,14 +180,14 @@ def generate_hci_for_train(traindata_all, traindata_label, input_size, label_siz
             ix_rd = 0
             iy_rd = 0
 
-        kk = np.random.randint(17)
+        kk = np.random.randint(14)
         scale = 1
         if (kk < 8):
             scale = 1
         elif (kk < 14):
             scale = 2
-        elif (kk < 17):
-            scale = 3
+        # elif (kk < 17):
+        #     scale = 3
 
         idx_start = np.random.randint(0, 512 - scale * input_size)
         idy_start = np.random.randint(0, 512 - scale * input_size)
@@ -222,6 +222,7 @@ def generate_hci_for_train(traindata_all, traindata_label, input_size, label_siz
                     valid = 0
 
         if (valid > 0):
+            
             image_center = (1 / 255) * np.squeeze(
                     R * traindata_all[image_id, idx_start: idx_start + scale * input_size:scale,
                         idy_start: idy_start + scale * input_size:scale, 4 + ix_rd, 4 + iy_rd, 0].astype('float32') +
@@ -259,38 +260,38 @@ def generate_hci_for_train(traindata_all, traindata_label, input_size, label_siz
     traindata_batch = np.float32((1 / 255) * traindata_batch)
     
     '''data argument'''
-    # contrast
+    # # contrast
     gray_rand = 0.4 * np.random.rand() + 0.8
     traindata_batch= pow(traindata_batch, gray_rand)
-    # traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
-    rotation_rand = np.random.randint(0, 5)
-    # h*w*9*9*3   1*h*w
-    if rotation_rand == 0:
-        traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
-    elif rotation_rand == 1:# 90
-        traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch))
-        traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 1, (2, 3))) # w*h*9*9*3
-        traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
-        traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :]))
-        traindata_batch_label[0, :, :] = traindata_label_tmp6
-    elif rotation_rand == 2: # 180
-        traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 2))
-        traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 2, (2, 3)))
-        traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
-        traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 2))
-        traindata_batch_label[0, :, :] = traindata_label_tmp6
-    elif rotation_rand == 3:# 270
-        traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 3))
-        traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 3, (2, 3)))
-        traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
-        traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 3))
-        traindata_batch_label[0, :, :] = traindata_label_tmp6
-    else:# flip
-        traindata_batch_tmp = np.copy(np.rot90(np.transpose(traindata_batch, (1, 0, 4, 2, 3))))
-        traindata_batch = np.copy(np.transpose(traindata_batch_tmp[:,:,:,::-1],(2,0,1,3,4) ))# 3*w*h*9*9
+    traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
+    # rotation_rand = np.random.randint(0, 5)
+    # # h*w*9*9*3   1*h*w
+    # if rotation_rand == 0:
+    #     traindata_batch = np.transpose(traindata_batch, (4,0,1,2,3))
+    # elif rotation_rand == 1:# 90
+    #     traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch))
+    #     traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 1, (2, 3))) # w*h*9*9*3
+    #     traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
+    #     traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :]))
+    #     traindata_batch_label[0, :, :] = traindata_label_tmp6
+    # elif rotation_rand == 2: # 180
+    #     traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 2))
+    #     traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 2, (2, 3)))
+    #     traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
+    #     traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 2))
+    #     traindata_batch_label[0, :, :] = traindata_label_tmp6
+    # elif rotation_rand == 3:# 270
+    #     traindata_batch_tmp6 = np.copy(np.rot90(traindata_batch, 3))
+    #     traindata_batch_tmp5 = np.copy(np.rot90(traindata_batch_tmp6, 3, (2, 3)))
+    #     traindata_batch = np.transpose(traindata_batch_tmp5, (4,0,1,2,3))
+    #     traindata_label_tmp6 = np.copy(np.rot90(traindata_batch_label[0, :, :], 3))
+    #     traindata_batch_label[0, :, :] = traindata_label_tmp6
+    # else:# flip
+    #     traindata_batch_tmp = np.copy(np.rot90(np.transpose(traindata_batch, (1, 0, 4, 2, 3))))
+    #     traindata_batch = np.copy(np.transpose(traindata_batch_tmp[:,:,:,::-1],(2,0,1,3,4) ))# 3*w*h*9*9
 
-        traindata_batch_label_tmp = np.copy(np.rot90(np.transpose(traindata_batch_label[0, :, :], (1,0))))
-        traindata_batch_label[0,:,:] = traindata_batch_label_tmp# 1*w*h
+    #     traindata_batch_label_tmp = np.copy(np.rot90(np.transpose(traindata_batch_label[0, :, :], (1,0))))
+    #     traindata_batch_label[0,:,:] = traindata_batch_label_tmp# 1*w*h
      
     traindata_all = torch.FloatTensor(traindata_batch)
     label_all = torch.FloatTensor(traindata_batch_label)
@@ -402,7 +403,7 @@ class TrainDataset(Dataset):
                                                                 self.Setting02_AngualrViews,
                                                                 self.boolmask_img4,self.boolmask_img6,self.boolmask_img15, self.use_v, self.inc)    
         # else:
-        #     return generate_hciold_for_train(self.hciold_all, self.hciold_label, 64, 3)
+        #   return generate_hciold_for_train(self.hciold_all, self.hciold_label, 64, 3)
 
 # train_loader = torch.utils.data.DataLoader(
 #     TrainDataset('train'),
@@ -413,47 +414,8 @@ class TrainDataset(Dataset):
 # for data in train_loader:
 #     print(0)
 
-# hci old 
-class TestDataset0(Dataset):
-    def __init__(self, opt, is_lytro=False, transform=None):
-        self.opt = opt
-        self.input_size = opt.input_size
-        
-        print('Load test data...') 
-        ## hciold
-        self.dir_LFimages=[
-            'blender/medieval',  'blender/horses', 'blender/stillLife', # blender/statue
-        'blender/monasRoom', 'blender/papillon', 'blender/buddha2'] #'blender/buddha',
-        self.valdata_all, self.valdata_label = load_hciold(self.dir_LFimages)
-        
-        print('Load test data... Complete') 
-
-
-    def __len__(self):
-        return len(self.dir_LFimages)
-
-    def __getitem__(self, index):
-        """
-        return:  0:input N*81*256*256  views=81
-                 1:label N*256*256
-                 2: name
-        """
-        ## hciold
-        # yu = index % 4
-        # index = index//4
-        center = self.opt.use_views // 2
-        name = self.dir_LFimages[index].split('/')  
-        valid_data = self.valdata_all[index]
-        h, w, _, _, _ = valid_data.shape
-        sh, sw = (h-512)//2, (w-512)//2 
-
-        valid_data = torch.FloatTensor(np.transpose(valid_data[sh:sh+512, sw:sw+512, 4-center:5+center, 4-center:5+center,:]/255., (4,0,1,2,3)))
-        test_label =  torch.FloatTensor(self.valdata_label[index][:512,:512]) 
-
-        return  valid_data, test_label, name[1]  # 81*512*512  512*512  array
-
 # hci
-class TestDataset(Dataset):
+class ValDataset(Dataset):
     def __init__(self, opt):
         self.opt = opt
         self.Setting02_AngualrViews = np.array([0,1,2,3,4,5,6,7,8])
@@ -479,5 +441,85 @@ class TestDataset(Dataset):
         name = self.dir_LFimages_hci[index].split('/')    
         valid_data = torch.FloatTensor(np.transpose(valid_data[index, :, :, 4-center:5+center, 4-center:5+center,:], (4,0,1,2,3)))
         test_label =  torch.FloatTensor(self.label_hci[index, :,:]) 
-        return  valid_data,test_label, name[1]  # 81*512*512  512*512  array
+        return  valid_data, test_label, name[1]  # 81*512*512  512*512  array
+
+
+# hci old 
+class ValDataset_(Dataset):
+    def __init__(self, opt, is_lytro=False, transform=None):
+        self.opt = opt
+        self.input_size = opt.input_size
+        
+        print('Load test data...') 
+        ## hciold
+        self.dir_LFimages=[
+            'blender/medieval',  'blender/horses', 'blender/stillLife', # blender/statue
+        'blender/monasRoom', 'blender/papillon', 'blender/buddha2'] #'blender/buddha',
+        self.valdata_all, self.valdata_label = load_hciold(self.dir_LFimages)
+        print('Load test data... Complete') 
+
+    def __len__(self):
+        return len(self.dir_LFimages)
+
+    def __getitem__(self, index):
+        """
+        return:  0:input N*81*256*256  views=81
+                 1:label N*256*256
+                 2: name
+        """
+        ## hciold
+        center = self.opt.use_views // 2
+        name = self.dir_LFimages[index].split('/')  
+        valid_data = self.valdata_all[index]
+        h, w, _, _, _ = valid_data.shape
+        sh, sw = (h-512)//2, (w-512)//2 
+        valid_data = torch.FloatTensor(np.transpose(valid_data[sh:sh+512, sw:sw+512, 4-center:5+center, 4-center:5+center,:]/255., (4,0,1,2,3)))
+        test_label =  torch.FloatTensor(self.valdata_label[index][sh:sh+512,sw:sw+512]) 
+        return  valid_data, test_label, name[1]  # 81*512*512  512*512  array
+
+
+class TestDataset(Dataset):
+    def __init__(self, opt, is_lytro=False, transform=None):
+        self.opt = opt
+        self.input_size = opt.input_size
+        
+        print('Load test data...') 
+        ## hciold
+        self.dir_LFimages=[
+            'blender/medieval',  'blender/horses', 'blender/stillLife', # blender/statue
+        'blender/monasRoom', 'blender/papillon', 'blender/buddha2', 'blender/buddha'] 
+        self.valdata_all, self.valdata_label = load_hciold(self.dir_LFimages)
+        print('Load test data... Complete') 
+
+    def __len__(self):
+        return len(self.dir_LFimages)*4
+
+    def __getitem__(self, index):
+        """
+        return:  0:input N*81*256*256  views=81
+                 1:label N*256*256
+                 2: name
+        """
+        ## hciold
+        patch_id = index % 4
+        index = index//4
+        center = self.opt.use_views // 2
+        name = self.dir_LFimages[index].split('/')  
+        valid_data = self.valdata_all[index]
+        H, W, _, _, _ = valid_data.shape
+
+        if patch_id==0:
+            valid_data = torch.FloatTensor(np.transpose(self.valdata_all[index][:512, :512, 4-center:5+center, 4-center:5+center,:]/255., (4,0,1,2,3)))
+            test_label =  torch.FloatTensor(self.valdata_label[index][:512,:512]) 
+        elif patch_id==1:
+            valid_data = torch.FloatTensor(np.transpose(self.valdata_all[index][-512:, :512, 4-center:5+center, 4-center:5+center,:]/255., (4,0,1,2,3)))
+            test_label =  torch.FloatTensor(self.valdata_label[index][-512:,:512]) 
+        elif patch_id==2:
+            valid_data = torch.FloatTensor(np.transpose(self.valdata_all[index][:512, -512:, 4-center:5+center, 4-center:5+center,:]/255., (4,0,1,2,3)))
+            test_label =  torch.FloatTensor(self.valdata_label[index][:512,-512:])
+        else:
+            valid_data = torch.FloatTensor(np.transpose(self.valdata_all[index][-512:, -512:, 4-center:5+center, 4-center:5+center,:]/255., (4,0,1,2,3)))
+            test_label =  torch.FloatTensor(self.valdata_label[index][-512:,-512:])
+        info = {'name': name[1], 'H':H, 'W':W, 'id':patch_id}
+        return  valid_data, test_label, info # 81*512*512  512*512  array
 

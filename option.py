@@ -127,10 +127,8 @@ class BaseOptions():
 
 class TrainOptions(BaseOptions):
     """This class includes training options.
-
     It also includes shared options defined in BaseOptions.
     """
-
     def initialize(self, parser):
         parser = BaseOptions.initialize(self, parser)
         # visdom and HTML visualization parameters
@@ -145,9 +143,8 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--phase', type=str, default='train', help='train, val, test, etc')
         parser.add_argument('--net_version', type=str, default='Unsup27_16_16', help='')
         parser.add_argument('--loss_version', type=str, default='Lossv3', help='')
-
         # training parameters
-        parser.add_argument('--n_epochs', type=int, default=100, help='number of epochs with the initial learning rate')              # 50
+        parser.add_argument('--n_epochs', type=int, default=70, help='number of epochs with the initial learning rate')              # 50
         # parser.add_argument('--n_epochs_decay', type=int, default=200, help='number of epochs to linearly decay learning rate to zero')# 150
         parser.add_argument('--opti_policy', type=str, default='Adam', help='[SGD | Momentum | RMSprop | Adam ]')                                  #0.001
         parser.add_argument('--beta1', type=float, default=0.9, help='momentum term of adam')
@@ -172,7 +169,7 @@ class TestOptions(BaseOptions):
         # Dropout and Batchnorm has different behavioir during training and test.
         parser.add_argument('--eval', action='store_true', help='use eval mode during test time.')
         parser.add_argument('--num_test', type=int, default=100, help='how many test images to run')
-        parser.add_argument('--net_version', type=str, default='Unsup31_15_53', help='')
+        parser.add_argument('--net_version', type=str, default='Unsup27_16_16', help='')
         parser.add_argument('--continue_train', action='store_true', help='continue training: load the latest model')
         parser.add_argument('--epoch_count', type=int, default=1, help='the starting epoch count, we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>, ...')
        
