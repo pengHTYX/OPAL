@@ -127,11 +127,11 @@ def save_img(opt, vis, img_name, save_tifdir):
             tensor = tensor.unsqueeze(1)
         if i == 1:
             pred_numpy = tensor[0,0,:,:].cpu().float().numpy() 
-            save_tif = os.path.join(save_tifdir,img_name + '_pred.tif')
+            save_tif = os.path.join(save_tifdir,img_name + '_pred.tiff')
             tif.imwrite(save_tif, pred_numpy)
         elif i==2:
             gt_numpy = tensor[0,0,:,:].cpu().float().numpy() 
-            save_tif = os.path.join(save_tifdir,img_name + '_gt.tif')
+            save_tif = os.path.join(save_tifdir,img_name + '_gt.tiff')
             tif.imwrite(save_tif, gt_numpy)
         i += 1
 

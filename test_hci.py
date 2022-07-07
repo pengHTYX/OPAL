@@ -23,9 +23,7 @@ torch.backends.cudnn.enabled = True
 def main():
     opt = TestOptions().parse() 
     data_lib = importlib.import_module('data.'+ opt.dataset_file)
-    # hciold_test = data_lib.TestDataset(opt) 
     hci_test = data_lib.ValDataset(opt) 
-    # valid_loader = torch.utils.data.DataLoader(hciold_test, batch_size=4, shuffle=False, num_workers=1)
     valid_loader = torch.utils.data.DataLoader(hci_test, batch_size=1, shuffle=False, num_workers=1)
 
     # print('The number of valid images = %d' % len(valid_dataset))
@@ -56,7 +54,7 @@ def main():
         bpr_list.append(bpr)
     
     # log result
-    with open(os.path.join(save_dir, 'mse_bpr007.txt'), 'w') as f:
+    with open(os.path.join('./hci_mse_bpr007.txt'), 'a') as f:
         f.write('{:-^100s}\n'.format(opt.time_str))
         _mse = 0
         _bpr = 0

@@ -90,8 +90,8 @@ class LFattModel(BaseModel): # Basemodel
             # self.loss_total = self.loss_L1
         self.loss_smoothness = get_smooth_loss(self.output, self.center_input, self.lamda) 
         
-        if 'smoothness' in self.loss_names and self.epoch > self.opt.n_epochs:
-            self.loss_total += self.loss_smoothness
+        if 'smoothness' in self.loss_names and self.epoch > 2*self.opt.n_epochs:
+            self.loss_total += self.loss_smoothness 
         self.loss_total.backward()
         
     def optimize_parameters(self):
