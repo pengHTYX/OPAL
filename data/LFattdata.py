@@ -190,6 +190,8 @@ class TestHciold(Dataset):
         info = {'name': name[1], 'H':H, 'W':W, 'id':patch_id}
         return  valid_data, test_label, info # 81*512*512  512*512  array
 
+
+
 class TestStanford(Dataset):
     def __init__(self, opt, is_lytro=False, transform=None):
         self.opt = opt
