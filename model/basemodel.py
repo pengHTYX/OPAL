@@ -79,12 +79,9 @@ class BaseModel(ABC):
         opt = self.opt
         if self.isTrain:
             self.schedulers = [get_scheduler(optimizer, opt) for optimizer in self.optimizers]
-        # if not self.isTrain:
-        try:
+        if not self.isTrain or opt.continue_train:
             load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
             self.load_networks(load_suffix)
-        except Exception:
-            print('Train from scratch...')
         self.print_networks(opt.verbose)
     
     def load_networks(self, epoch):

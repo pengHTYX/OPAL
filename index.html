@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Occlusion Pattern Aware Loss for Unsupervised Light Field Disparity Estimation.">
+  <meta name="keywords" content="Light Field Disparity Estimation, Unsupervised Disparity Estimation, Occlusion Pattern Aware Loss">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OPAL: Occlusion Pattern Aware Loss for Unsupervised Light Field Disparity Estimation</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+</head>
+<body>
+
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-2 publication-title">OPAL: Occlusion Pattern Aware Loss for Unsupervised Light Field Disparity Estimation</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              Peng Li<sup>*</sup>,</span>
+            <span class="author-block">
+              Jiayin Zhao<sup>*</sup>,</span>
+            <span class="author-block">
+              Jingyao Wu,
+            </span>
+            <span class="author-block">
+              Chao Deng,
+            </span>
+            <span class="author-block">
+              Yuqi Han,
+            </span>
+            <span class="author-block">
+              Haoqian Wang,
+            </span>
+            <span class="author-block">
+              <a href="http://www.ytrock.com/">Tao Yu</a>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Tsinghua University</span>
+            <!-- <span class="author-block"><sup>2</sup>Google Research</span> -->
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <!-- <span class="link-block">
+                <a 
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span> -->
+              <span class="link-block">
+                <a href="https://arxiv.org/pdf/2203.02231.pdf"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Video Link. -->
+              <span class="link-block">
+                <a href="https://www.youtube.com/watch?v=Tlu8NMDBXo8"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+              <!-- Dataset Link. -->
+              <!-- <span class="link-block">
+                <a href="https://github.com/google/nerfies/releases/tag/0.1"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="far fa-images"></i>
+                  </span>
+                  <span>Data</span>
+                  </a> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <video id="teaser" autoplay muted loop playsinline height="100%">
+        <source src="./static/images/people_out.mp4"
+                type="video/mp4">
+      </video>
+      <type="video/mp4">
+    </div>
+  </div>
+</section>
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <video id="teaser" autoplay muted loop playsinline height="100%">
+        <source src="./static/images/flower_video.mp4"
+                type="video/mp4">
+      </video>
+      <type="video/mp4">
+      <h2 class="subtitle has-text-centered">
+        <br>
+        <div class="word-container">
+          <span class="word" id=word1>Input</span>
+          <span class="word" id=word2><a href="https://ieeexplore.ieee.org/document/9517020">OAVC</a> </span>
+          <span class="word" id=word3>OPAL</span>
+        </div>
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+
+
+<!-- <section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+        <div class="item item-steve">
+          <video poster="" id="steve" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/steve.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-chair-tp">
+          <video poster="" id="chair-tp" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/chair-tp.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-shiba">
+          <video poster="" id="shiba" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/shiba.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-fullbody">
+          <video poster="" id="fullbody" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/fullbody.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-blueshirt">
+          <video poster="" id="blueshirt" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/blueshirt.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-mask">
+          <video poster="" id="mask" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/mask.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-coffee">
+          <video poster="" id="coffee" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/coffee.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+        <div class="item item-toby">
+          <video poster="" id="toby" autoplay controls muted loop playsinline height="100%">
+            <source src="./static/videos/toby2.mp4"
+                    type="video/mp4">
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> -->
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Light field disparity estimation is an essential task in computer vision. Currently, supervised learning-based methods have
+            achieved better performance than both unsupervised and optimization-based methods. However, the generalization capacity of
+            supervised methods on real-world data, where no ground truth is available for training, remains limited. In this paper, we argue that
+            unsupervised methods can achieve not only much stronger generalization capacity on real-world data but also more accurate disparity
+            estimation results on synthetic datasets. To fulfill this goal, we present the Occlusion Pattern Aware Loss, named OPAL, which
+            successfully extracts and encodes general occlusion patterns inherent in the light field for calculating the disparity loss. OPAL enables:
+            i) accurate and robust disparity estimation by teaching the network how to handle occlusions effectively and ii) significantly reduced
+            network parameters required for accurate and efficient estimation. We further propose an EPI transformer and a gradient-based
+            refinement module for achieving more accurate and pixel-aligned disparity estimation results. Extensive experiments demonstrate our
+            method not only significantly improves the accuracy compared with SOTA unsupervised methods, but also possesses stronger
+            generalization capacity on real-world data compared with SOTA supervised methods. Last but not least, the network training and
+            inference efficiency are much higher than existing learning-based methods. 
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class = "has-text-centered">
+            <h2 class="title is-3">Method</h2>
+          </div>
+          <br>
+            <img src="static/images/Network.jpg"
+            class=""
+            alt=""/>
+            Overview of the network architecture and training loss. Our network, named OPENet, contains four components:
+          an image feature extractor, an EPI-Transformer, a disparity regression module and a gradient-based disparity refinement
+          module (GDRM). The green part demonstrates the proposed training loss, OPAL, which is only used for the unsupervised
+          training process.
+        </div>
+      </div>
+    </div>
+
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <div class = "has-text-centered">
+            <h2 class="title is-3">Results</h2>
+          </div>
+          <br>
+            <img src="static/images/mesh.jpg" class="" alt=""/>
+            Mesh rendering comparisonqs on real-world datasets with SOTA optimization-based (<a href="https://ieeexplore.ieee.org/document/9517020">OAVC</a>) and
+            supervised methods (LFattNet and <a href="https://openaccess.thecvf.com/content/CVPR2022/papers/Wang_Occlusion-Aware_Cost_Constructor_for_Light_Field_Depth_Estimation_CVPR_2022_paper.pdf">OACC</a>).
+            <br>
+            <br>
+            <!-- <img src="static/images/lego.jpg" class="" alt=""/>
+           **** -->
+           <img src="static/images/EPFL.jpg" class="" alt=""/>
+           Comparisons of results on realworld dataset captured with Lytro camera. Input, LFattNet, OACC, CAE, OAVC, Unsup and OPAL from left to right. 
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Paper video. -->
+    <!-- <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Video</h2>
+        <div class="publication-video">
+          <iframe src="https://www.youtube.com/watch?v=Tlu8NMDBXo8"
+                  frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div> -->
+    <!--/ Paper video. -->
+  </div>
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <!-- <pre><code>@article{park2021nerfies,
+  author    = {Park, Keunhong and Sinha, Utkarsh and Barron, Jonathan T. and Bouaziz, Sofien and Goldman, Dan B and Seitz, Steven M. and Martin-Brualla, Ricardo},
+  title     = {Nerfies: Deformable Neural Radiance Fields},
+  journal   = {ICCV},
+  year      = {2021}, 
+} -->
+</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <a class="icon-link"
+         href="https://arxiv.org/pdf/2306.16928.pdf">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="https://github.com/One-2-3-45/One-2-3-45" class="external-link" disabled>
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is borrowed from <a
+              href="https://github.com/nerfies/nerfies.github.io">nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

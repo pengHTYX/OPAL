@@ -484,7 +484,7 @@ output : B*C*A*H*W
 """
 
 class transformer_layer(nn.Module):
-    def __init__(self,channels,angles,layer_num,num_heads):
+    def __init__(self,channels,angles,layer_num,num_heads,opt):
         super().__init__()
         self.channels = channels
         self.angRes = angles
@@ -495,7 +495,8 @@ class transformer_layer(nn.Module):
         self.MHSA_params['dropout'] = 0.
 
         ################ Alternate AngTrans & SpaTrans ################
-        self.altblock = self.make_layer(layer_num=layer_num)
+        if opt.num_layers !=0 :
+            self.altblock = self.make_layer(layer_num=layer_num)
 
     def make_layer(self, layer_num):
         layers = []
@@ -503,24 +504,28 @@ class transformer_layer(nn.Module):
             layers.append(AngTrans(self.channels,self.angRes,self.MHSA_params))
         return nn.Sequential(*layers)
 
-    def forward(self, lr):
+    def forward(self, lr,opt):
 
         # [B, C(hannels), A, h, w]
-        for m in self.modules():
-            m.h = lr.size(-2)
-            m.w = lr.size(-1)
-
         buffer = lr
 
-        # Position Encoding
-        ang_position = self.pos_encoding(buffer, dim=2, token_dim=self.channels)
-        for m in self.modules():
-            m.ang_position = ang_position
+        if opt.num_layers != 0:
 
-        # Alternate AngTrans & SpaTrans
-        out = self.altblock(buffer) + buffer
+            for m in self.modules():
+                m.h = lr.size(-2)
+                m.w = lr.size(-1)
 
-        return out
+            # Position Encoding
+            ang_position = self.pos_encoding(buffer, dim=2, token_dim=self.channels)
+            for m in self.modules():
+                m.ang_position = ang_position
+
+            # Alternate AngTrans & SpaTrans
+            out = self.altblock(buffer) + buffer
+
+            return out
+        
+        else: return buffer
 
 
 class PositionEncoding(nn.Module):

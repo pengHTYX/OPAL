@@ -131,15 +131,14 @@ dmypy.json
 # file
 *.tif
 *.tiff
-*.jpg
 *.png
 *.pyc
-*.txt
 *.pth
 *.out
 launch.json
 
 tb/
-checkoutpoints/
+checkpoints/
 output/
 results/
+dataset/

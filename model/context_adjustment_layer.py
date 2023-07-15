@@ -48,39 +48,6 @@ class ContextAdjustmentLayer(nn.Module):
 
         return disp_final, occ_final
 
-class ContextAdjustmentLayerv2(nn.Module):
-    """
-    Adjust the disp and occ based on image context, design loosely follows https://github.com/JiahuiYu/wdsr_ntire2018
-    """
-
-    def __init__(self, num_blocks=8, feature_dim=16, expansion=3):
-        super().__init__()
-        self.num_blocks = num_blocks
-
-        # disp head
-        self.in_conv = nn.Conv2d(4, feature_dim, kernel_size=3, padding=1)
-        self.layers = nn.ModuleList([ResBlock(feature_dim, expansion) for _ in range(num_blocks)])
-        self.out_conv = nn.Conv2d(feature_dim, 1, kernel_size=3, padding=1)
-
-
-    def forward(self, disp_raw: Tensor,  img: Tensor):
-        """
-        :param disp_raw: raw disparity, [N,1,H,W]
-        :param occ_raw: raw occlusion mask, [N,1,H,W]
-        :param img: input left image, [N,3,H,W]
-        :return:
-            disp_final: final disparity [N,1,H,W]
-            occ_final: final occlusion [N,1,H,W] 
-        """""
-        feat = self.in_conv(torch.cat([disp_raw, img], dim=1))
-        for layer in self.layers:
-            feat = layer(feat, disp_raw)
-        disp_res = self.out_conv(feat)
-        disp_final = disp_raw + disp_res
- 
-
-        return disp_final
-
 class ResBlock(nn.Module):
     def __init__(self, n_feats: int, expansion_ratio: int, res_scale: int = 1.0):
         super(ResBlock, self).__init__()
