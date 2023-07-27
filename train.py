@@ -5,15 +5,22 @@ import random
 
 
 import time
+from scipy.io import savemat
+
 import torch
+
 import torch.nn.parallel
 import importlib
+
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter, writer
+import torchvision
+
 from util import create_model, creat_logger, save_current_visual
+import torchvision.transforms as transforms
 from option import TrainOptions
 import os
 
@@ -40,6 +47,7 @@ def main():
 
     data_lib = importlib.import_module('data.'+ opt.dataset_file)
     train_dataset = data_lib.TrainDataset(opt, True)
+            # normalize,])
     valid_dataset = data_lib.TestDataset(opt)
     print('The number of training images = %d' % len(train_dataset))
     print('The number of valid images = %d' % len(valid_dataset))
@@ -60,10 +68,10 @@ def main():
     model = create_model(opt)
     model.setup()
     total_iters = 0  
+    best_loss = 1e3  
     if not opt.debug:
         writer = writer_dict['writer']
     for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):   
-    # for epoch in range(opt.epoch_count, opt.n_epochs + 1):
         epoch_start_time = time.time()  # timer for entire epoch
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
@@ -77,11 +85,7 @@ def main():
             
             model.set_input(data, epoch)         # unpack data from dataset and apply preprocessing
             model.optimize_parameters()   # calculate loss functions, get gradients, update network weights
-            
-            if total_iters % opt.display_freq == 0 and epoch > opt.after_epoch_save_visual:
-                visuals = model.get_current_visuals()
-                writer = writer_dict['writer']
-                save_current_visual(visuals, epoch, epoch_iter,writer, phase='train')
+
             
             if total_iters % opt.print_freq == 0:    # print training losses and save logging information to the disk
                 losses = model.get_current_losses()
@@ -101,31 +105,19 @@ def main():
                   'Loss: {4}\t {5}'.format(epoch, i, len(train_loader), t_comp, losses['L1'], smoothloss_msg,opt.n_epochs + opt.n_epochs_decay)
                 logger.info(msg)
 
-                if opt.display_id > 0:
-                 visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, losses)
-
-            if total_iters % opt.save_latest_freq == 0 :   # cache our latest model every <save_latest_freq> iterations
-                print('saving the latest model (epoch %d, total_iters %d)' % (epoch, total_iters))
-                # save_suffix = 'iter_%d' % total_iters if opt.save_by_iter else 'latest'
-                save_suffix = 'latest'
-                model.save_networks(save_suffix)
-
-        # if epoch % opt.save_epoch_freq == 0 :   
-        #     model.save_networks(str(epoch))
         model.save_networks('latest')
         # valid
-        # synth
+        # syth
         if epoch % 5 == 0:
+            mse_log = 0
             for i,data in enumerate(valid_loader):
-            #     if i >= opt.num_val:  # only apply our model to opt.num_test images.
-            #         break
+
                 name = data[-1][0]
                 model.set_input(data[:-1], epoch)
                 model.test()
                 visuals = model.get_current_visuals()  # get image results
                 output = visuals['output'][0]
-                # output = (output - torch.min(output))/(torch.max(output) - torch.min(output))
-                # writer.add_image('v35*5_output_'+name, output, epoch)
+
                 label = visuals['label'][0]
                 diff = torch.abs(output-label)
                 train_bp = torch.where(diff >= 0.07, 1, 0).float()
@@ -138,11 +130,6 @@ def main():
                 output = (output - torch.min(output))/(torch.max(output) - torch.min(output))
                 writer.add_image('v35*5_output_'+name, output, epoch)
                 writer.add_image('v35*5_diff_'+name, diff, epoch)
-                
-                mse_log += mse_x100.item()
-            if mse_log < best_loss and epoch>2*opt.n_epochs:
-                best_loss = mse_log
-                model.save_networks(str(epoch))
        
         # real world
         if epoch % 10 == 0 and epoch > opt.n_epochs:
@@ -154,9 +141,6 @@ def main():
                 output = visuals['output'][0]
                 output = (output - torch.min(output))/(torch.max(output) - torch.min(output))
                 writer.add_image('v35*5_output_'+name, output, epoch)
-        
-
- 
     
     print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))
 
