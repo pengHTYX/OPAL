@@ -12,6 +12,7 @@ Tsinghua University
 * Set the hyper-parameters in `option.py` if needed. We have provided our default settings in the realeased codes.
 * Run `train.py` to perform network training.
 * Checkpoint will be saved to `./checkpoints/`.
+* If you want to train the network with the HCI dataset, place the input LFs into './dataset/hci_dataset/'.
 
 #### Test:
 * Place the input LFs into `./dataset` (see the attached example).
