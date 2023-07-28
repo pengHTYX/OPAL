@@ -1,14 +1,16 @@
 import importlib
+
+from sklearn import datasets
 from model.basemodel import BaseModel
+
 from pathlib import Path
 import logging
 import time
 import numpy as np
 import torch
-import os
-import tifffile as tif
+
 def create_model(opt):
-    model_name = opt.model_name  # LFdepth
+    model_name = opt.model_name  
     model_filename = 'model.model_'+model_name
     modellib = importlib.import_module(model_filename)
     model = None
@@ -37,10 +39,16 @@ def creat_logger(opt, mode='train'):
     print('=> creating {}'.format(final_output_dir))
     final_output_dir.mkdir(parents=True, exist_ok=True) # output/model
     
-    time_str = time.strftime('%Y-%m-%d-%H-%M')
+    if opt.time_str != '':
+        time_str = opt.time_str
+    else:
+        time_str = time.strftime('%Y-%m-%d-%H-%M')
+        tblog_dir = Path('tb') / model / time_str
+        print('=> creating {}'.format(tblog_dir))
+        tblog_dir.mkdir(parents=True, exist_ok=True)   # tb_log/model/time
+
     log_file = '{}_{}.log'.format(mode, time_str)
     final_log_file = final_output_dir / log_file  # output/model/train_time.log
-    
 
     head = '%(asctime)-15s %(message)s'
     logging.basicConfig(filename=str(final_log_file),
@@ -50,9 +58,7 @@ def creat_logger(opt, mode='train'):
     console = logging.StreamHandler()
     logging.getLogger('').addHandler(console)
 
-    tblog_dir = Path('tb_final') / model / time_str
-    print('=> creating {}'.format(tblog_dir))
-    tblog_dir.mkdir(parents=True, exist_ok=True)   # tb_log/model/time
+    
 
     return logger,  str(final_output_dir), str(final_log_file), str(tblog_dir), time_str
 
@@ -64,12 +70,22 @@ def tensor2im(input_image, mode):
         else:
             return input_image
         image_numpy = image_tensor[0].cpu().float().numpy()  # convert it into a numpy array
+        # if image_numpy.shape[0] == 1:  # grayscale to RGB
+        #     image_numpy = np.tile(image_numpy, (3, 1, 1))
+        # if is_I:
+        #     image_numpy = np.transpose(image_numpy, (1, 2, 0))  * 255.0
+        # else:
         image_numpy = np.transpose(image_numpy, (1, 2, 0))
         if mode == 'no':
             ma, mi = image_numpy.max(), image_numpy.min()
             image_numpy = (image_numpy-mi)/(ma-mi)
         image_numpy = image_numpy * 255.0  # post-processing: tranpose and scaling
-
+        # elif label == 'real_BI'  or label == 'fake_BI':
+        #     image_numpy = image_numpy * 255.0
+        # elif label == 'real_BP' or label == 'fake_BP':
+        #     image_numpy = image_numpy * np.pi
+        #     ma, mi = image_numpy.max(), image_numpy.min()
+        #     image_numpy = (image_numpy - mi)/(ma-mi) * 255.0
     else:  # if it is a numpy array, do nothing
         image_numpy = input_image
     return image_numpy
@@ -99,26 +115,64 @@ def save_current_visual(visu, epoch, iter, writer, phase):
         
         #         writer.add_image(save_name, tensor[0,j].unsqueeze(0), epoch)  # c*h*w [0,1]
             
+import os
+import cv2
+import tifffile as tif
 
-def save_img(opt, vis, img_name):
+def save_img(opt, vis, img_name, save_tifdir):
     '''save test result to ./results '''
-    save_dir = os.path.join(opt.results_dir, opt.model_name, opt.time_str)
-    save_tifdir = os.path.join(opt.results_dir, opt.model_name, opt.time_str,'scan_LF')
-    if not os.path.exists(save_dir)  :
-        os.makedirs(save_dir)
-    if not os.path.exists(save_tifdir)  :
-        os.makedirs(save_tifdir)   
     i = 0
-    
-    for _, tensor in vis.items():
+    for vis_name, tensor in vis.items():
         if len(tensor.shape) == 3:
             tensor = tensor.unsqueeze(1)
         if i == 1:
             pred_numpy = tensor[0,0,:,:].cpu().float().numpy() 
-            save_name = img_name+'_depth.tif'
-            save_tif = os.path.join(save_tifdir,save_name)
-            tif.imwrite(save_tif,pred_numpy)
+            save_tif = os.path.join(save_tifdir,img_name + '_pred.tiff')
+            tif.imwrite(save_tif, pred_numpy)
+        elif i==2:
+            gt_numpy = tensor[0,0,:,:].cpu().float().numpy() 
+            save_tif = os.path.join(save_tifdir,img_name + '_gt.tiff')
+            tif.imwrite(save_tif, gt_numpy)
         i += 1
 
+    train_diff = np.abs(pred_numpy - gt_numpy)
+    training_mean_squared_error_x100 = 100 * np.average(np.square(train_diff))
+    train_bp = (train_diff >= 0.07)
+    bpr007 = 100 * np.average(train_bp)
+    return training_mean_squared_error_x100, bpr007
 
-   
+# hciold is too large
+def save_patch(opt, vis, img_name, save_tifdir, info):
+    '''save test result to ./results '''
+    H = info['H'][0]
+    W = info['W'][0]
+    out = np.zeros((H, W))
+    gt = np.zeros((H, W))
+    i = 0
+    for vis_name, tensor in vis.items():
+        if len(tensor.shape) == 3:
+            tensor = tensor.unsqueeze(1)
+        if i == 1:
+            result = tensor.cpu().float().numpy() 
+            out[:512, :512] = result[0,0]
+            out[-512:, :512] = result[1,0]
+            out[:512, -512:] = result[2,0]
+            out[-512:, -512:] = result[3,0]
+            save_tif = os.path.join(save_tifdir, img_name + '_pred.tiff')
+            tif.imwrite(save_tif, out)
+        elif i==2:
+            gt_numpy = tensor.cpu().float().numpy() 
+            gt[:512, :512] = gt_numpy[0,0]
+            gt[-512:, :512] = gt_numpy[1,0]
+            gt[:512, -512:] = gt_numpy[2,0]
+            gt[-512:, -512:] = gt_numpy[3,0]
+            save_tif = os.path.join(save_tifdir, img_name + '_gt.tiff')
+            tif.imwrite(save_tif, gt)
+        i += 1
+
+    train_diff = np.abs(gt - out)
+    training_mean_squared_error_x100 = 100 * np.average(np.square(train_diff))
+    train_bp = (train_diff >= 0.07)
+    bpr007 = 100 * np.average(train_bp)
+    return training_mean_squared_error_x100, bpr007
+    

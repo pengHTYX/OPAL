@@ -1,8 +1,6 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-import random
-
 
 import time
 from scipy.io import savemat
@@ -16,21 +14,19 @@ import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 
-from torch.utils.tensorboard import SummaryWriter, writer
-import torchvision
+from torch.utils.tensorboard import SummaryWriter
 
-from util import create_model, creat_logger, save_current_visual
+from util import create_model, creat_logger
 import torchvision.transforms as transforms
 from option import TrainOptions
 import os
 
-# random.seed(2)
 def norm(tensor):
     return (tensor-torch.min(tensor))/(torch.max(tensor)-torch.min(tensor))
 
 def main():
     opt = TrainOptions().parse() 
-    opt.n_epochs_decay = 2* opt.n_epochs
+    opt.n_epochs_decay = int(3.5* opt.n_epochs)
     opt.lr_decay_iters = opt.n_epochs
     # cudnn related setting
     torch.backends.cudnn.benchmark = True
@@ -44,11 +40,14 @@ def main():
             'train_global_steps': 0,
             'valid_global_steps': 0,
         }
-
+    
+    normalize = transforms.Normalize(
+        mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+    )
     data_lib = importlib.import_module('data.'+ opt.dataset_file)
     train_dataset = data_lib.TrainDataset(opt, True)
             # normalize,])
-    valid_dataset = data_lib.TestDataset(opt)
+    valid_dataset = data_lib.ValDataset(opt)
     print('The number of training images = %d' % len(train_dataset))
     print('The number of valid images = %d' % len(valid_dataset))
     train_loader = torch.utils.data.DataLoader(
@@ -71,7 +70,7 @@ def main():
     best_loss = 1e3  
     if not opt.debug:
         writer = writer_dict['writer']
-    for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):   
+    for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):    
         epoch_start_time = time.time()  # timer for entire epoch
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
@@ -85,7 +84,6 @@ def main():
             
             model.set_input(data, epoch)         # unpack data from dataset and apply preprocessing
             model.optimize_parameters()   # calculate loss functions, get gradients, update network weights
-
             
             if total_iters % opt.print_freq == 0:    # print training losses and save logging information to the disk
                 losses = model.get_current_losses()
@@ -108,16 +106,19 @@ def main():
         model.save_networks('latest')
         # valid
         # syth
-        if epoch % 5 == 0:
+        if epoch % 3 == 0:
+            model.save_networks(str(epoch))
             mse_log = 0
             for i,data in enumerate(valid_loader):
-
+            #     if i >= opt.num_val:  # only apply our model to opt.num_test images.
+            #         break
                 name = data[-1][0]
                 model.set_input(data[:-1], epoch)
                 model.test()
                 visuals = model.get_current_visuals()  # get image results
                 output = visuals['output'][0]
-
+                # output = (output - torch.min(output))/(torch.max(output) - torch.min(output))
+                # writer.add_image('v35*5_output_'+name, output, epoch)
                 label = visuals['label'][0]
                 diff = torch.abs(output-label)
                 train_bp = torch.where(diff >= 0.07, 1, 0).float()
@@ -130,18 +131,9 @@ def main():
                 output = (output - torch.min(output))/(torch.max(output) - torch.min(output))
                 writer.add_image('v35*5_output_'+name, output, epoch)
                 writer.add_image('v35*5_diff_'+name, diff, epoch)
+                
+                mse_log += mse_x100.item()
        
-        # real world
-        if epoch % 10 == 0 and epoch > opt.n_epochs:
-            for i,data in enumerate(valid_loader):
-                name = data[-1][0]
-                model.set_input(data[:-1], epoch)
-                model.test()
-                visuals = model.get_current_visuals()  # get image results
-                output = visuals['output'][0]
-                output = (output - torch.min(output))/(torch.max(output) - torch.min(output))
-                writer.add_image('v35*5_output_'+name, output, epoch)
-    
     print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))
 
 
