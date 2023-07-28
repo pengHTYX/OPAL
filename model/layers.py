@@ -212,7 +212,6 @@ class ResidualGroup(nn.Module):
 ## dense block
 ## bn-relu-1*1-bn-relu-3*3
 class _DenseLayer(nn.Sequential):
-    r'''DenseBlock中的内部结构，这里是BN+ReLU+1x1 Conv+BN+ReLU+3x3 Conv结构'''
 
     def __init__(self, num_input_features, growth_rate, bn_size, drop_rate=0):
         super(_DenseLayer, self).__init__()
@@ -484,7 +483,7 @@ output : B*C*A*H*W
 """
 
 class transformer_layer(nn.Module):
-    def __init__(self,channels,angles,layer_num,num_heads,opt):
+    def __init__(self,channels,angles,layer_num,num_heads):
         super().__init__()
         self.channels = channels
         self.angRes = angles
@@ -495,8 +494,7 @@ class transformer_layer(nn.Module):
         self.MHSA_params['dropout'] = 0.
 
         ################ Alternate AngTrans & SpaTrans ################
-        if opt.num_layers !=0 :
-            self.altblock = self.make_layer(layer_num=layer_num)
+        self.altblock = self.make_layer(layer_num=layer_num)
 
     def make_layer(self, layer_num):
         layers = []
@@ -504,28 +502,24 @@ class transformer_layer(nn.Module):
             layers.append(AngTrans(self.channels,self.angRes,self.MHSA_params))
         return nn.Sequential(*layers)
 
-    def forward(self, lr,opt):
+    def forward(self, lr):
 
         # [B, C(hannels), A, h, w]
+        for m in self.modules():
+            m.h = lr.size(-2)
+            m.w = lr.size(-1)
+
         buffer = lr
 
-        if opt.num_layers != 0:
+        # Position Encoding
+        ang_position = self.pos_encoding(buffer, dim=2, token_dim=self.channels)
+        for m in self.modules():
+            m.ang_position = ang_position
 
-            for m in self.modules():
-                m.h = lr.size(-2)
-                m.w = lr.size(-1)
+        # Alternate AngTrans & SpaTrans
+        out = self.altblock(buffer) + buffer
 
-            # Position Encoding
-            ang_position = self.pos_encoding(buffer, dim=2, token_dim=self.channels)
-            for m in self.modules():
-                m.ang_position = ang_position
-
-            # Alternate AngTrans & SpaTrans
-            out = self.altblock(buffer) + buffer
-
-            return out
-        
-        else: return buffer
+        return out
 
 
 class PositionEncoding(nn.Module):
@@ -607,8 +601,4 @@ if __name__ == '__main__':
     x = torch.randn((4,8,9,64,64))
     y = model(x)
     print()
-    # images = torch.randn((1,2,1,4,4))
-    # print(images)
-    # new = rearrange(images, 'b c a (h h1) (w w1)  -> b (c h1 w1) a h w ', h1=2, w1=2)
-    # print(new)
    
